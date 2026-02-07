@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RainSafe Paths – NBSC</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="top-bar">
+      <div class="logo">
+        <span class="logo-mark">☔</span>
+        <div class="logo-text">
+          <h1>RainSafe Paths</h1>
+          <p>NBSC Campus Pathway Safety</p>
+        </div>
+      </div>
+      <nav class="top-nav">
+        <span id="currentUserLabel" class="user-label hidden"></span>
+        <button id="logoutBtn" class="btn btn-ghost hidden">Logout</button>
+      </nav>
+    </header>
+
+    <main class="main-layout">
+      <!-- LOGIN VIEW -->
+      <section id="loginView" class="view-card">
+        <div class="view-header">
+          <h2>Sign in to RainSafe Paths</h2>
+          <p class="muted">
+            Use your NBSC email to sign in. Admin accounts are managed by the
+            project adviser.
+          </p>
+        </div>
+
+        <form id="loginForm" class="form">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="you@nbsc.edu.ph"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" class="btn btn-primary" id="loginSubmitBtn">
+              Sign In
+            </button>
+            <span class="helper-text">
+              New reporter? You can create a regular user account below.
+            </span>
+          </div>
+        </form>
+
+        <div class="divider">
+          <span>or</span>
+        </div>
+
+        <form id="signupForm" class="form form-inline">
+          <div class="form-group">
+            <label for="signupEmail">Create user account</label>
+            <input
+              type="email"
+              id="signupEmail"
+              placeholder="student@nbsc.edu.ph"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Password</label>
+            <input
+              type="password"
+              id="signupPassword"
+              placeholder="Minimum 6 characters"
+              minlength="6"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-outline" id="signupSubmitBtn">
+            Create User Account
+          </button>
+        </form>
+
+        <p id="authMessage" class="status-message"></p>
+      </section>
+
+      <!-- USER DASHBOARD -->
+      <section id="userDashboardView" class="view-grid hidden">
+        <section class="panel">
+          <div class="view-header">
+            <h2>Submit Pathway Report</h2>
+            <p class="muted">
+              Help your school by reporting slippery, flooded, or muddy
+              areas after rainfall.
+            </p>
+          </div>
+
+          <form id="reportForm" class="form">
+            <div class="form-group">
+              <label for="location">Location</label>
+              <input
+                type="text"
+                id="location"
+                placeholder="e.g., Main Gate near Building A"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="hazardType">Hazard Type</label>
+              <select id="hazardType" required>
+                <option value="">Select hazard type</option>
+                <option value="Flooding / Water Accumulation">
+                  Flooding / Water Accumulation
+                </option>
+                <option value="Slippery Surface">Slippery Surface</option>
+                <option value="Mud / Erosion">Mud / Erosion</option>
+                <option value="Obstruction / Debris">
+                  Obstruction / Debris
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Severity</label>
+              <div class="severity-toggle" id="severityToggle">
+                <button
+                  type="button"
+                  data-value="Low"
+                  class="chip chip-outline chip-selected"
+                >
+                  Low
+                </button>
+                <button type="button" data-value="Medium" class="chip chip-outline">
+                  Medium
+                </button>
+                <button type="button" data-value="High" class="chip chip-outline">
+                  High
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                rows="3"
+                placeholder="Provide details about the unsafe pathway..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="reporterName">Name</label>
+              <input
+                type="text"
+                id="reporterName"
+                placeholder="Your name"
+              />
+            </div>
+
+            <div class="form-footer">
+              <button type="submit" class="btn btn-primary" id="reportSubmitBtn">
+                Submit Report
+              </button>
+              <span class="helper-text">
+                Reports are shared with campus safety and admin users.
+              </span>
+            </div>
+          </form>
+
+          <p id="reportMessage" class="status-message"></p>
+        </section>
+
+        <section class="panel">
+          <div class="view-header view-header-row">
+            <div>
+              <h2>Your Recent Reports</h2>
+              <p class="muted">
+                Only you and admin users can see which reports you submitted.
+              </p>
+            </div>
+          </div>
+          <div id="userReportsList" class="cards-list empty-state">
+            <p class="muted">No reports yet. Submit your first concern.</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- ADMIN DASHBOARD -->
+      <section id="adminDashboardView" class="view-grid hidden">
+        <section class="panel">
+          <div class="view-header view-header-row">
+            <div>
+              <h2>Reports Overview</h2>
+              <p class="muted">
+                Filter and review all submitted pathway reports across NBSC.
+              </p>
+            </div>
+            <div class="filters">
+              <select id="adminSeverityFilter">
+                <option value="">All Severities</option>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+              <select id="adminHazardFilter">
+                <option value="">All Hazards</option>
+                <option value="Flooding / Water Accumulation">
+                  Flooding / Water Accumulation
+                </option>
+                <option value="Slippery Surface">Slippery Surface</option>
+                <option value="Mud / Erosion">Mud / Erosion</option>
+                <option value="Obstruction / Debris">
+                  Obstruction / Debris
+                </option>
+              </select>
+              <button id="adminRefreshBtn" class="btn btn-outline">
+                Refresh
+              </button>
+            </div>
+          </div>
+          <div id="adminReportsList" class="cards-list empty-state">
+            <p class="muted">
+              No reports found. Ask students to submit pathway concerns.
+            </p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="view-header">
+            <h2>High-Risk Locations</h2>
+            <p class="muted">
+              Locations with repeated reports or high severity. Use this to
+              coordinate maintenance and advisories.
+            </p>
+          </div>
+          <table class="table" id="hotspotsTable">
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Reports</th>
+                <th>Most Recent Severity</th>
+                <th>Last Reported</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filled in by JS -->
+            </tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        RainSafe Paths – NBSC · IT35A Application Development and Emerging
+        Technologies
+      </p>
+    </footer>
+
+    <!-- Supabase client from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
+
