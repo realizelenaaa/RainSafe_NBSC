@@ -101,169 +101,246 @@
       </section>
 
       <!-- USER DASHBOARD -->
-      <section id="userDashboardView" class="view-grid hidden">
-        <section class="panel">
-          <div class="view-header">
-            <h2>Submit Pathway Report</h2>
-            <p class="muted">
-              Help your school by reporting slippery, flooded, or muddy
-              areas after rainfall.
-            </p>
-          </div>
+      <section id="userDashboardView" class="panel admin-dashboard hidden">
+        <nav class="top-tabs" id="userSideNav">
+          <button class="side-tab side-tab-active" data-user-tab="submit">
+            Submit Report
+          </button>
+          <button class="side-tab" data-user-tab="reports">
+            Recent Reports
+          </button>
+          <button class="side-tab" data-user-tab="activity">
+            Activity Logs
+          </button>
+        </nav>
 
-          <form id="reportForm" class="form">
-            <div class="form-group">
-              <label for="location">Location</label>
-              <input
-                type="text"
-                id="location"
-                placeholder="e.g., Main Gate near Building A"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="hazardType">Hazard Type</label>
-              <select id="hazardType" required>
-                <option value="">Select hazard type</option>
-                <option value="Flooding / Water Accumulation">
-                  Flooding / Water Accumulation
-                </option>
-                <option value="Slippery Surface">Slippery Surface</option>
-                <option value="Mud / Erosion">Mud / Erosion</option>
-                <option value="Obstruction / Debris">
-                  Obstruction / Debris
-                </option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Severity</label>
-              <div class="severity-toggle" id="severityToggle">
-                <button
-                  type="button"
-                  data-value="Low"
-                  class="chip chip-outline chip-selected"
-                >
-                  Low
-                </button>
-                <button type="button" data-value="Medium" class="chip chip-outline">
-                  Medium
-                </button>
-                <button type="button" data-value="High" class="chip chip-outline">
-                  High
-                </button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea
-                id="description"
-                rows="3"
-                placeholder="Provide details about the unsafe pathway..."
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="reporterName">Name</label>
-              <input
-                type="text"
-                id="reporterName"
-                placeholder="Your name"
-              />
-            </div>
-
-            <div class="form-footer">
-              <button type="submit" class="btn btn-primary" id="reportSubmitBtn">
-                Submit Report
-              </button>
-              <span class="helper-text">
-                Reports are shared with campus safety and admin users.
-              </span>
-            </div>
-          </form>
-
-          <p id="reportMessage" class="status-message"></p>
-        </section>
-
-        <section class="panel">
-          <div class="view-header view-header-row">
-            <div>
-              <h2>Your Recent Reports</h2>
+        <div class="admin-panels">
+          <section
+            class="panel admin-panel-group"
+            data-user-tab-panel="submit"
+          >
+            <div class="view-header">
+              <h2>Submit Pathway Report</h2>
               <p class="muted">
-                Only you and admin users can see which reports you submitted.
+                Help your school by reporting slippery, flooded, or muddy
+                areas after rainfall.
               </p>
             </div>
-          </div>
-          <div id="userReportsList" class="cards-list empty-state">
-            <p class="muted">No reports yet. Submit your first concern.</p>
-          </div>
-        </section>
+
+            <form id="reportForm" class="form">
+              <div class="form-group">
+                <label for="location">Location</label>
+                <input
+                  type="text"
+                  id="location"
+                  placeholder="e.g., Main Gate near Building A"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="hazardType">Hazard Type</label>
+                <select id="hazardType" required>
+                  <option value="">Select hazard type</option>
+                  <option value="Flooding / Water Accumulation">
+                    Flooding / Water Accumulation
+                  </option>
+                  <option value="Slippery Surface">Slippery Surface</option>
+                  <option value="Mud / Erosion">Mud / Erosion</option>
+                  <option value="Obstruction / Debris">
+                    Obstruction / Debris
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Severity</label>
+                <div class="severity-toggle" id="severityToggle">
+                  <button
+                    type="button"
+                    data-value="Low"
+                    class="chip chip-outline chip-selected"
+                  >
+                    Low
+                  </button>
+                  <button
+                    type="button"
+                    data-value="Medium"
+                    class="chip chip-outline"
+                  >
+                    Medium
+                  </button>
+                  <button
+                    type="button"
+                    data-value="High"
+                    class="chip chip-outline"
+                  >
+                    High
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="description">Description</label>
+                <textarea
+                  id="description"
+                  rows="3"
+                  placeholder="Provide details about the unsafe pathway..."
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="reporterName">Name</label>
+                <input
+                  type="text"
+                  id="reporterName"
+                  placeholder="Your name"
+                />
+              </div>
+
+              <div class="form-footer">
+                <button type="submit" class="btn btn-primary" id="reportSubmitBtn">
+                  Submit Report
+                </button>
+                <span class="helper-text">
+                  Reports are shared with campus safety and admin users.
+                </span>
+              </div>
+            </form>
+
+            <p id="reportMessage" class="status-message"></p>
+          </section>
+
+          <section
+            class="panel user-panel hidden"
+            data-user-tab-panel="reports"
+          >
+            <div class="view-header view-header-row">
+              <div>
+                <h2>Your Recent Reports</h2>
+                <p class="muted">
+                  Only you and admin users can see which reports you submitted.
+                </p>
+              </div>
+            </div>
+            <div id="userReportsList" class="cards-list empty-state">
+              <p class="muted">No reports yet. Submit your first concern.</p>
+            </div>
+          </section>
+
+          <!-- USER ACTIVITY LOGS TAB -->
+          <section
+            class="panel user-panel hidden"
+            data-user-tab-panel="activity"
+          >
+            <div class="view-header">
+              <h2>User Activity Logs</h2>
+              <p class="muted">
+                See a history of your recent actions and submitted reports.
+              </p>
+            </div>
+            <div id="userActivityLogsList" class="cards-list empty-state">
+              <p class="muted">No activity yet.</p>
+            </div>
+          </section>
+        </div>
       </section>
 
       <!-- ADMIN DASHBOARD -->
-      <section id="adminDashboardView" class="view-grid hidden">
-        <section class="panel">
-          <div class="view-header view-header-row">
-            <div>
-              <h2>Reports Overview</h2>
-              <p class="muted">
-                Filter and review all submitted pathway reports across NBSC.
-              </p>
-            </div>
-            <div class="filters">
-              <select id="adminSeverityFilter">
-                <option value="">All Severities</option>
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-              </select>
-              <select id="adminHazardFilter">
-                <option value="">All Hazards</option>
-                <option value="Flooding / Water Accumulation">
-                  Flooding / Water Accumulation
-                </option>
-                <option value="Slippery Surface">Slippery Surface</option>
-                <option value="Mud / Erosion">Mud / Erosion</option>
-                <option value="Obstruction / Debris">
-                  Obstruction / Debris
-                </option>
-              </select>
-              <button id="adminRefreshBtn" class="btn btn-outline">
-                Refresh
-              </button>
-            </div>
-          </div>
-          <div id="adminReportsList" class="cards-list empty-state">
-            <p class="muted">
-              No reports found. Ask students to submit pathway concerns.
-            </p>
-          </div>
-        </section>
+      <section id="adminDashboardView" class="panel admin-dashboard hidden">
+        <nav class="top-tabs" id="adminTopNav">
+          <button class="top-tab top-tab-active" data-admin-tab="reports">
+            Reports
+          </button>
+          <button class="top-tab" data-admin-tab="activity">
+            Activity Logs
+          </button>
+        </nav>
 
-        <section class="panel">
-          <div class="view-header">
-            <h2>High-Risk Locations</h2>
-            <p class="muted">
-              Locations with repeated reports or high severity. Use this to
-              coordinate maintenance and advisories.
-            </p>
+        <div class="admin-panels">
+          <div
+            class="admin-panel-group"
+            data-admin-tab-panel="reports"
+          >
+            <section class="panel panel-nested">
+              <div class="view-header view-header-row">
+                <div>
+                  <h2>Reports Overview</h2>
+                  <p class="muted">
+                    Filter and review all submitted pathway reports across NBSC.
+                  </p>
+                </div>
+                <div class="filters">
+                  <select id="adminSeverityFilter">
+                    <option value="">All Severities</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+                  <select id="adminHazardFilter">
+                    <option value="">All Hazards</option>
+                    <option value="Flooding / Water Accumulation">
+                      Flooding / Water Accumulation
+                    </option>
+                    <option value="Slippery Surface">Slippery Surface</option>
+                    <option value="Mud / Erosion">Mud / Erosion</option>
+                    <option value="Obstruction / Debris">
+                      Obstruction / Debris
+                    </option>
+                  </select>
+                  <button id="adminRefreshBtn" class="btn btn-outline">
+                    Refresh
+                  </button>
+                </div>
+              </div>
+              <div id="adminReportsList" class="cards-list empty-state">
+                <p class="muted">
+                  No reports found. Ask students to submit pathway concerns.
+                </p>
+              </div>
+            </section>
+
+            <section class="panel panel-nested">
+              <div class="view-header">
+                <h2>High-Risk Locations</h2>
+                <p class="muted">
+                  Locations with repeated reports or high severity. Use this to
+                  coordinate maintenance and advisories.
+                </p>
+              </div>
+              <table class="table" id="hotspotsTable">
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>Reports</th>
+                    <th>Most Recent Severity</th>
+                    <th>Last Reported</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Filled in by JS -->
+                </tbody>
+              </table>
+            </section>
           </div>
-          <table class="table" id="hotspotsTable">
-            <thead>
-              <tr>
-                <th>Location</th>
-                <th>Reports</th>
-                <th>Most Recent Severity</th>
-                <th>Last Reported</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Filled in by JS -->
-            </tbody>
-          </table>
-        </section>
+
+          <div
+            class="admin-panel-group hidden"
+            data-admin-tab-panel="activity"
+          >
+            <section class="panel panel-nested">
+              <div class="view-header">
+                <h2>System Activity Logs</h2>
+                <p class="muted">
+                  View the most recent actions performed by users in the system.
+                </p>
+              </div>
+              <div id="adminActivityLogsList" class="cards-list empty-state">
+                <p class="muted">No activity logs found.</p>
+              </div>
+            </section>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -274,9 +351,6 @@
       </p>
     </footer>
 
-    <!-- Supabase client from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
   </body>
 </html>
-
