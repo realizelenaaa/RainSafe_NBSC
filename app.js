@@ -1,10 +1,92 @@
-const SUPABASE_URL = "https://nyjnuzslnvjsjijqayms.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55am51enNsbnZqc2ppanFheW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyMDc3OTksImV4cCI6MjA4NTc4Mzc5OX0.S4dh0wpjT9C90JBtG-eewta5kl6V-s-bZJ0qTfxFZrU";
+"use strict";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
+const API_BASE = ""; 
+
+async function apiRequest(path, { method = "GET", body } = {}) {
+  const options = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  };
+
+  if (body !== undefined) {
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(API_BASE + path, options);
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message = data && data.error ? data.error : "Request failed.";
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+async function apiGetSession() {
+  return apiRequest("auth.php?action=session", { method: "GET" });
+}
+
+async function apiLogin(email, password) {
+  return apiRequest("auth.php?action=login", {
+    method: "POST",
+    body: { email, password },
+  });
+}
+
+async function apiSignup(email, password) {
+  return apiRequest("auth.php?action=signup", {
+    method: "POST",
+    body: { email, password },
+  });
+}
+
+async function apiLogout() {
+  return apiRequest("auth.php?action=logout", { method: "POST" });
+}
+
+async function apiGetUserReports() {
+  const { reports } = await apiRequest("reports.php", { method: "GET" });
+  return reports || [];
+}
+
+async function apiGetAdminReports(filters = {}) {
+  const params = new URLSearchParams();
+  params.set("scope", "admin");
+  if (filters.severity) params.set("severity", filters.severity);
+  if (filters.hazard_type) params.set("hazard_type", filters.hazard_type);
+
+  const { reports } = await apiRequest(
+    `reports.php?${params.toString()}`,
+    { method: "GET" }
+  );
+  return reports || [];
+}
+
+async function apiCreateReport(payload) {
+  return apiRequest("reports.php", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+async function apiGetUserActivityLogs() {
+  const { logs } = await apiRequest("activity_logs.php", { method: "GET" });
+  return logs || [];
+}
+
+async function apiGetAdminActivityLogs() {
+  const params = new URLSearchParams();
+  params.set("scope", "admin");
+  const { logs } = await apiRequest(
+    `activity_logs.php?${params.toString()}`,
+    { method: "GET" }
+  );
+  return logs || [];
+}
 
 // Elements
 const loginView = document.getElementById("loginView");
@@ -18,12 +100,16 @@ const authMessage = document.getElementById("authMessage");
 const reportForm = document.getElementById("reportForm");
 const reportMessage = document.getElementById("reportMessage");
 const userReportsList = document.getElementById("userReportsList");
+const userActivityLogsList = document.getElementById("userActivityLogsList");
+const userSideNav = document.getElementById("userSideNav");
 
 const adminReportsList = document.getElementById("adminReportsList");
 const adminSeverityFilter = document.getElementById("adminSeverityFilter");
 const adminHazardFilter = document.getElementById("adminHazardFilter");
 const adminRefreshBtn = document.getElementById("adminRefreshBtn");
 const hotspotsTableBody = document.querySelector("#hotspotsTable tbody");
+const adminActivityLogsList = document.getElementById("adminActivityLogsList");
+const adminTopNav = document.getElementById("adminTopNav");
 
 const currentUserLabel = document.getElementById("currentUserLabel");
 const logoutBtn = document.getElementById("logoutBtn");
@@ -31,7 +117,6 @@ const logoutBtn = document.getElementById("logoutBtn");
 const severityToggle = document.getElementById("severityToggle");
 
 let currentUser = null;
-let currentProfile = null;
 let selectedSeverity = "Low";
 
 function setStatus(element, message, type = "") {
@@ -73,6 +158,36 @@ function showView(view) {
     currentUserLabel.classList.remove("hidden");
     logoutBtn.classList.remove("hidden");
   }
+}
+
+function setUserTab(tab) {
+  const buttons = document.querySelectorAll("[data-user-tab]");
+  const panels = document.querySelectorAll("[data-user-tab-panel]");
+
+  buttons.forEach((btn) => {
+    const value = btn.getAttribute("data-user-tab");
+    btn.classList.toggle("side-tab-active", value === tab);
+  });
+
+  panels.forEach((panel) => {
+    const value = panel.getAttribute("data-user-tab-panel");
+    panel.classList.toggle("hidden", value !== tab);
+  });
+}
+
+function setAdminTab(tab) {
+  const buttons = document.querySelectorAll("[data-admin-tab]");
+  const panels = document.querySelectorAll("[data-admin-tab-panel]");
+
+  buttons.forEach((btn) => {
+    const value = btn.getAttribute("data-admin-tab");
+    btn.classList.toggle("top-tab-active", value === tab);
+  });
+
+  panels.forEach((panel) => {
+    const value = panel.getAttribute("data-admin-tab-panel");
+    panel.classList.toggle("hidden", value !== tab);
+  });
 }
 
 function getSeverityClass(severity) {
@@ -138,6 +253,47 @@ function renderReports(listElement, reports, { showReporter = false } = {}) {
     .join("");
 }
 
+function renderActivityLogs(listElement, logs, { showUser = false } = {}) {
+  if (!listElement) return;
+
+  if (!logs || logs.length === 0) {
+    listElement.innerHTML = '<p class="muted">No activity yet.</p>';
+    listElement.classList.add("empty-state");
+    return;
+  }
+
+  listElement.classList.remove("empty-state");
+
+  listElement.innerHTML = logs
+    .map((log) => {
+      const who = showUser
+        ? log.user_email || `User #${log.user_id}`
+        : "";
+
+      return `
+      <article class="report-card">
+        <div class="report-card-header">
+          <div>
+            <div class="report-location">${log.action}</div>
+            ${
+              who
+                ? `<div class="report-tags"><span class="tag tag-muted">${who}</span></div>`
+                : ""
+            }
+          </div>
+        </div>
+        <div class="report-body">
+          ${log.details ? log.details : "<em>No extra details recorded.</em>"}
+        </div>
+        <div class="report-footer">
+          <span>${formatDateTime(log.created_at)}</span>
+        </div>
+      </article>
+    `;
+    })
+    .join("");
+}
+
 function groupHotspots(reports) {
   const byLocation = new Map();
 
@@ -194,64 +350,46 @@ function renderHotspots(reports) {
     .join("");
 }
 
-async function fetchProfile(user) {
-  const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Error loading profile:", error);
-    return null;
-  }
-  return data;
-}
-
 async function handleAuthChange(user) {
   currentUser = user;
 
   if (!user) {
-    currentProfile = null;
     currentUserLabel.textContent = "";
     showView("login");
     return;
   }
 
-  currentProfile = await fetchProfile(user);
-  const role = currentProfile?.role || "user";
+  const role = user.role || "user";
 
   currentUserLabel.textContent = `${user.email} · ${role.toUpperCase()} MODE`;
 
   if (role === "admin") {
     showView("admin");
+    setAdminTab("reports");
     await loadAdminReports();
+    await loadAdminActivityLogs();
   } else {
     showView("user");
+    setUserTab("submit");
     await loadUserReports();
+    await loadUserActivityLogs();
   }
 }
 
 async function loadUserReports() {
   if (!currentUser) return;
 
-  const { data, error } = await supabaseClient
-    .from("reports")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
+  try {
+    const reports = await apiGetUserReports();
+    renderReports(userReportsList, reports, { showReporter: false });
+  } catch (error) {
     console.error("Error loading user reports:", error);
     setStatus(
       reportMessage,
       "Unable to load your reports right now.",
       "error"
     );
-    return;
   }
-
-  renderReports(userReportsList, data || [], { showReporter: false });
 }
 
 async function loadAdminReports() {
@@ -262,23 +400,38 @@ async function loadAdminReports() {
   if (severity) filters.severity = severity;
   if (hazard) filters.hazard_type = hazard;
 
-  let query = supabaseClient.from("reports").select("*");
-
-  if (filters.severity) query = query.eq("severity", filters.severity);
-  if (filters.hazard_type) query = query.eq("hazard_type", filters.hazard_type);
-
-  query = query.order("created_at", { ascending: false });
-
-  const { data, error } = await query;
-
-  if (error) {
+  try {
+    const reports = await apiGetAdminReports(filters);
+    renderReports(adminReportsList, reports, { showReporter: true });
+    renderHotspots(reports);
+  } catch (error) {
     console.error("Error loading admin reports:", error);
     renderReports(adminReportsList, [], { showReporter: true });
-    return;
   }
+}
 
-  renderReports(adminReportsList, data || [], { showReporter: true });
-  renderHotspots(data || []);
+async function loadUserActivityLogs() {
+  if (!currentUser) return;
+
+  try {
+    const logs = await apiGetUserActivityLogs();
+    renderActivityLogs(userActivityLogsList, logs, { showUser: false });
+  } catch (error) {
+    console.error("Error loading user activity logs:", error);
+    renderActivityLogs(userActivityLogsList, [], { showUser: false });
+  }
+}
+
+async function loadAdminActivityLogs() {
+  if (!currentUser) return;
+
+  try {
+    const logs = await apiGetAdminActivityLogs();
+    renderActivityLogs(adminActivityLogsList, logs, { showUser: true });
+  } catch (error) {
+    console.error("Error loading admin activity logs:", error);
+    renderActivityLogs(adminActivityLogsList, [], { showUser: true });
+  }
 }
 
 // Event wiring
@@ -297,6 +450,26 @@ if (severityToggle) {
   });
 }
 
+if (userSideNav) {
+  userSideNav.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-user-tab]");
+    if (!button) return;
+    const tab = button.getAttribute("data-user-tab");
+    if (!tab) return;
+    setUserTab(tab);
+  });
+}
+
+if (adminTopNav) {
+  adminTopNav.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-admin-tab]");
+    if (!button) return;
+    const tab = button.getAttribute("data-admin-tab");
+    if (!tab) return;
+    setAdminTab(tab);
+  });
+}
+
 if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -308,25 +481,20 @@ if (loginForm) {
     const submitBtn = document.getElementById("loginSubmitBtn");
     setLoading(submitBtn, true, "Sign In");
 
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(submitBtn, false, "Sign In");
-
-    if (error) {
+    try {
+      const { user } = await apiLogin(email, password);
+      setLoading(submitBtn, false, "Sign In");
+      setStatus(authMessage, "Signed in successfully.", "success");
+      await handleAuthChange(user);
+    } catch (error) {
       console.error("Login error:", error);
+      setLoading(submitBtn, false, "Sign In");
       setStatus(
         authMessage,
-        "Sign in failed. Check your email and password.",
+        error.message || "Sign in failed. Check your email and password.",
         "error"
       );
-      return;
     }
-
-    setStatus(authMessage, "Signed in successfully.", "success");
-    await handleAuthChange(data.user);
   });
 }
 
@@ -341,38 +509,25 @@ if (signupForm) {
     const submitBtn = document.getElementById("signupSubmitBtn");
     setLoading(submitBtn, true, "Create User Account");
 
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-    });
-
-    setLoading(submitBtn, false, "Create User Account");
-
-    if (error) {
-      console.error("Signup error:", error);
+    try {
+      await apiSignup(email, password);
+      setLoading(submitBtn, false, "Create User Account");
       setStatus(
         authMessage,
-        "Could not create account. Use a different email or try again.",
+        "Account created. You can now sign in.",
+        "success"
+      );
+      signupForm.reset();
+    } catch (error) {
+      console.error("Signup error:", error);
+      setLoading(submitBtn, false, "Create User Account");
+      setStatus(
+        authMessage,
+        error.message ||
+          "Could not create account. Use a different email or try again.",
         "error"
       );
-      return;
     }
-
-    setStatus(
-      authMessage,
-      "Account created. Check your inbox for verification, then sign in.",
-      "success"
-    );
-
-    if (data.user) {
-      await supabaseClient.from("profiles").insert({
-        id: data.user.id,
-        email,
-        role: "user",
-      });
-    }
-
-    signupForm.reset();
   });
 }
 
@@ -392,48 +547,52 @@ if (reportForm) {
       severity: selectedSeverity,
       description: document.getElementById("description").value.trim(),
       reporter_name: document.getElementById("reporterName").value.trim(),
-      user_id: currentUser.id,
     };
 
     const submitBtn = document.getElementById("reportSubmitBtn");
     setLoading(submitBtn, true, "Submit Report");
 
-    const { error } = await supabaseClient.from("reports").insert(payload);
+    try {
+      await apiCreateReport(payload);
+      setLoading(submitBtn, false, "Submit Report");
 
-    setLoading(submitBtn, false, "Submit Report");
+      reportForm.reset();
+      selectedSeverity = "Low";
+      Array.from(severityToggle.querySelectorAll("button")).forEach((btn) => {
+        btn.classList.toggle(
+          "chip-selected",
+          btn.dataset.value === selectedSeverity
+        );
+      });
 
-    if (error) {
-      console.error("Error submitting report:", error);
       setStatus(
         reportMessage,
-        "Unable to submit report right now. Please try again.",
+        "Thank you. Your report has been recorded.",
+        "success"
+      );
+
+      await loadUserReports();
+      await loadUserActivityLogs();
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      setLoading(submitBtn, false, "Submit Report");
+      setStatus(
+        reportMessage,
+        error.message ||
+          "Unable to submit report right now. Please try again.",
         "error"
       );
-      return;
     }
-
-    reportForm.reset();
-    selectedSeverity = "Low";
-    Array.from(severityToggle.querySelectorAll("button")).forEach((btn) => {
-      btn.classList.toggle(
-        "chip-selected",
-        btn.dataset.value === selectedSeverity
-      );
-    });
-
-    setStatus(
-      reportMessage,
-      "Thank you. Your report has been recorded.",
-      "success"
-    );
-
-    await loadUserReports();
   });
 }
 
 if (logoutBtn) {
   logoutBtn.addEventListener("click", async () => {
-    await supabaseClient.auth.signOut();
+    try {
+      await apiLogout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     await handleAuthChange(null);
   });
 }
@@ -441,6 +600,7 @@ if (logoutBtn) {
 if (adminRefreshBtn) {
   adminRefreshBtn.addEventListener("click", () => {
     loadAdminReports();
+    loadAdminActivityLogs();
   });
 }
 
@@ -459,13 +619,10 @@ if (adminHazardFilter) {
 // Initial session check on page load
 (async function bootstrap() {
   try {
-    const {
-      data: { session },
-    } = await supabaseClient.auth.getSession();
-    await handleAuthChange(session?.user ?? null);
+    const { user } = await apiGetSession();
+    await handleAuthChange(user ?? null);
   } catch (err) {
     console.error("Error initializing session:", err);
     showView("login");
   }
 })();
-
