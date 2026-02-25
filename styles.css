@@ -118,6 +118,100 @@ body {
   gap: 1.75rem;
 }
 
+.user-grid {
+  grid-template-columns: 260px minmax(0, 1fr);
+  align-items: flex-start;
+}
+
+.user-panels {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.75rem;
+  border-radius: var(--radius-lg);
+  background: radial-gradient(circle at top left, #eff6ff 0, #ffffff 55%);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.side-tab {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--muted);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    transform 0.08s ease;
+}
+
+.side-tab:hover {
+  background: rgba(37, 99, 235, 0.05);
+  color: var(--accent-strong);
+}
+
+.side-tab-active {
+  background: #ffffff;
+  color: var(--accent-strong);
+  border-color: rgba(37, 99, 235, 0.8);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+  transform: translateX(1px);
+}
+
+.admin-dashboard {
+  margin-top: 1.75rem;
+}
+
+.top-tabs {
+  display: inline-flex;
+  gap: 0.4rem;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: #f3f4f6;
+  margin-bottom: 1.25rem;
+}
+
+.top-tab {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.35rem 1rem;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--muted);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.top-tab:hover {
+  color: var(--accent-strong);
+}
+
+.top-tab-active {
+  background: #ffffff;
+  color: var(--accent-strong);
+  border-color: rgba(37, 99, 235, 0.9);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+
+.admin-panels {
+  display: grid;
+  gap: 1.4rem;
+  margin-top: 0.75rem;
+}
+
+.panel-nested {
+  box-shadow: none;
+  border-radius: var(--radius-md);
+}
+
 .view-header {
   margin-bottom: 1.5rem;
 }
@@ -493,7 +587,8 @@ textarea {
 }
 
 @media (max-width: 900px) {
-  .view-grid {
+  .view-grid,
+  .user-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -536,5 +631,9 @@ textarea {
     width: 100%;
     flex-wrap: wrap;
   }
-}
 
+  .side-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
